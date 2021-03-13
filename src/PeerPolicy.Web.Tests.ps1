@@ -15,7 +15,7 @@ describe "Unit tests" {
         }
     }
     context "Check" {
-        it "Should create shortcut without uri" {
+        it -Tag Win "Should create shortcut without uri" {
             $uniqueString = [Guid]::NewGuid()
             try {
                 $res = RegisterAndStartTask -settings (New-WebSettings @()) -lnkFileNameAppendix $uniqueString
@@ -25,7 +25,7 @@ describe "Unit tests" {
                 Remove-Item (Get-LnkPath $uniqueString)
             }
         }
-        it "Should create and update shortcut" {
+        it -Tag Win "Should create and update shortcut" {
             $uniqueString = [Guid]::NewGuid()
             try {
                 $res = RegisterAndStartTask -settings (New-WebSettings -uri @()) -lnkFileNameAppendix $uniqueString
@@ -41,7 +41,7 @@ describe "Unit tests" {
                 Remove-Item (Get-LnkPath $uniqueString)
             }
         }
-        it "Should create shortcut with uri" {
+        it -Tag Win "Should create shortcut with uri" {
             $uniqueString = [Guid]::NewGuid()
             $res = RegisterAndStartTask -settings (New-WebSettings -uri @('123')) -lnkFileNameAppendix $uniqueString
             try {
@@ -73,7 +73,7 @@ describe ("Integration Tests") {
             & "$($inputObj.ScriptPath)" -WebServer $true -Uri @() -OpenBrowser $false -HttpPrefix $inputObj.HttpPrefix
         } -InputObject @{ HttpPrefix = $httpPrefix; ScriptPath = $ScriptPath } )
     }
-    context ("Check Web Server") {
+    context -Tag Win ("Check Web Server") {
         it "Should start-stop" {
         }
         it "Should get /" {

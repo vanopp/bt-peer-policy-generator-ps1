@@ -1,1 +1,1 @@
-pwsh -Command Invoke-Pester -Output Detailed -ExcludeTagFilter PS51
+pwsh -Command Invoke-Pester -Output Detailed -ExcludeTagFilter PS51,Win
