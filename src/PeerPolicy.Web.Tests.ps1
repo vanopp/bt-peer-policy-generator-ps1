@@ -86,7 +86,7 @@ describe ("Integration Tests") {
             $nodes = $xml.SelectNodes('//iprange')
             $nodes.Count | should -Be 3
         }
-        it "Should get /xml?Uri (Custom input file)" {
+        it -Tag PS51 "Should get /xml?Uri (Custom input file)" {
             $filename = Join-Path $TestDrive 'somefile.txt'
             "10.0.0.1/32`r 20.5.0.1/31 `n 100.15.10.1/08 " | Out-File -FilePath $filename -Encoding utf8
 

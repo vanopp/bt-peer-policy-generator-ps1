@@ -127,17 +127,17 @@ Describe 'Integration Tests' {
             @() | Get-PolicyXmlString | should -Match '<btpolicy[\s\S]*<revision>[\s\S]*</btpolicy>' 
             @() | Get-PolicyXmlString | should -BeOfType String
         }
-        it "Should throw error for non-existent server" {
+        it -Tag PS51 "Should throw error for non-existent server" {
             { Get-PolicyXmlString "file://\\nonserver1\file.txt" } | should -Throw "*The network path was not found*"
         }
-        it "Should throw error for non-existent file" {
+        it -Tag PS51 "Should throw error for non-existent file" {
             $filename = Join-Path $PSScriptRoot 'nonexistentfile.txt'
             { Get-PolicyXmlString "file://$filename" } | should -Throw "*Could not find file *nonexistentfile.txt'*"
         }
-        it "Should throw error for wrong url" {
+        it -Tag PS51 "Should throw error for wrong url" {
             { Get-PolicyXmlString "http://zzz.comd" } | should -Throw "*The remote name could not be resolved: 'zzz.comd'*"
         }
-        it "Should process input file" {
+        it -Tag PS51 "Should process input file" {
             $filename = Join-Path $TestDrive 'somefile.txt'
             "10.0.0.1/32`r 20.5.0.1/31 `n 100.15.10.1/08 " | Out-File -FilePath $filename -Encoding utf8
 
@@ -146,7 +146,7 @@ Describe 'Integration Tests' {
             $actual | should -Match '<iprange start="20.5.0.0" end="20.5.0.1" weight="10" '
             $actual | should -Match '<iprange start="100.0.0.0" end="100.255.255.255" weight="10" '
         }
-        it "Should process multiple input files" {
+        it -Tag PS51 "Should process multiple input files" {
             $filename1 = Join-Path $TestDrive 'somefile1.txt'
             "10.0.0.1/32`r20.5.0.1/31" | Out-File -FilePath $filename1 -Encoding utf8
             $filename2 = Join-Path $TestDrive 'somefile2.txt'
