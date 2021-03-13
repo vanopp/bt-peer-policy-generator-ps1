@@ -7,7 +7,7 @@ PeerPolicy.Web.ps1 is an experimental self-hosted web UI for configuring and exe
 
 ## Usage samples:
 Repository contains few batch files with sample commands:\
-ProcessSampleData.cmd - uses PeerPolicy.ps1 to geneerate result xml file\
+ProcessSampleData.cmd - uses PeerPolicy.ps1 to generate result xml file\
 RunWeb.cmd - starts web host and opens configuration in browser\
 RunTests.cmd - run unit and integration tests. Please run InstallPester.cmd first.
 
