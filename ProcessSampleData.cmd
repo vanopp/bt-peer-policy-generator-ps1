@@ -1,0 +1,2 @@
+@rem -Uri can be none, one -Uri 'http://srv...' or multiple: -Uri @('http://srv1...','http://srv2...') 
+powershell.exe "%~dp0src\PeerPolicy.ps1" -Process -Uri "%~dp0SampleInputData.dat" -Destination "%~dp0GeneratedPeerPolicy.xml"

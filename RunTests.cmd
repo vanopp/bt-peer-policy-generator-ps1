@@ -1,0 +1,1 @@
+powershell.exe Invoke-Pester -Output Detailed

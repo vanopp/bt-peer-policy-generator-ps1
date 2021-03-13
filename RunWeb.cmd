@@ -1,0 +1,1 @@
+powershell.exe "%~dp0src\PeerPolicy.Web.ps1" -WebServer -Uri @()

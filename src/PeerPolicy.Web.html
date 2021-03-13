@@ -1,0 +1,147 @@
+<html>
+<head>
+    <script>
+        serverAddress = location.protocol + '//' + location.host;
+        window.onload = onLoad;
+
+        var isDirty = false
+        function setDirty(dirtyFlag) {
+            isDirty = dirtyFlag
+            document.getElementById('bRegister').disabled = isDirty
+        }
+
+        function reloadData() {
+            get('/Settings', function (xhr) {
+                let json = JSON.parse(xhr.response);
+                document.getElementById('iInput').value = json.Uri.join('\r');
+                document.getElementById('cShowWindow').checked = json.IsShowWindow;
+                document.getElementById('cOpenBrowser').checked = json.IsOpenBrowser;
+            });
+        }
+
+        function onLoad() {
+            reloadData();
+
+            document.getElementById('iOutput').value = getUrl('/xml');
+            document.getElementById('bStop').onclick = function () {
+                get('/Stop', function (xhr) {
+                    alert(xhr.response);
+                });
+            }
+            document.getElementById('bOpen').onclick = function () {
+                window.open(getUrlWithParam('/xml'), '_blank');
+            }
+            document.getElementById('bTest').onclick = function () {
+                get(getUrlWithParam('/xml'), function (xhr) {
+                    var doc = xhr.responseXML;
+                    if (doc == null) {
+                        alert('Error! Received non-xml: ' + xhr.response.substring(0, 50) + '..');
+                    } else {
+                        alert('OK! Loaded ' + doc.getElementsByTagName('iprange').length + ' ip range elements');
+                        setDirty (false);
+                    }
+                });
+            }
+            document.getElementById('bCopy').onclick = function () {
+                document.getElementById('iOutput').select();
+                document.execCommand('copy');
+            }
+            document.getElementById('bRegister').onclick = function () {
+                get(getUrlWithParam('/Register'), function (xhr) {
+                    setTimeout(function () {
+                        reloadData();
+                    }, 1000);
+                });
+            }
+            document.getElementById('bUnregister').onclick = function () {
+                get('/Unregister', function (xhr) {
+                    alert(xhr.response);
+                });
+            }
+            document.getElementById('bHistory').onclick = function () {
+                get('/History', function (xhr) {
+                    document.getElementById('dHistory').innerHTML = xhr.responseText;
+                });
+            }
+        }
+
+        function getUrl(path) {
+            return serverAddress + path;
+        }
+        function getUrlWithParam(path) {
+            var input = document.getElementById('iInput').value;
+            var showWindow = document.getElementById('cShowWindow').checked;
+            var openBrowser = document.getElementById('cOpenBrowser').checked;
+            return serverAddress + path + '?Uri=' + encodeURIComponent(input) + '&showWindow=' + showWindow + "&openBrowser=" + openBrowser;
+        }
+
+        function get(url, onSuccessCallback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    document.body.style.cursor = 'default';
+                    if (xhr.status == 200)
+                        onSuccessCallback(xhr);
+                    else if (xhr.status === 400)
+                        alert('error: ' + xhr.responseText);
+                    else if (xhr.status === 0)
+                        alert('error: no response. Is server started?');
+                    else
+                        alert('error ' + xhr.status + ': ' + xhr.statusText);
+                }
+            }
+            document.body.style.cursor = 'wait';
+            xhr.send();
+        }
+    </script>
+    <style>
+        * {
+            margin-bottom: 8;
+        }
+
+        #iInput,
+        #iOutput {
+            width: 600px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        Welcome to PeerPolicy Web configuration page
+    </div>
+    <div>
+        Input http/https urls and file names<br>
+        <textarea id='iInput' rows='5' onkeyup='setDirty(true)' onchange='setDirty(true)'></textarea><br>
+    </div>
+    <div>
+        <button id='bTest'>Validate</button>
+        <button id='bOpen'>Open output in new window</button>
+    </div>
+
+    <div>
+        <input id='cShowWindow' type="checkbox">
+        <label for="cShowWindow">Show powershell window</label>
+        <input id='cOpenBrowser' type="checkbox">
+        <label for="cOpenBrowser">Open browser on start</label>
+    </div>
+    <div>
+        <button id='bRegister'>Save settings and add to startup</button>
+        <!-- <button id='bRestart'>Restart</button> -->
+        <button id='bUnregister'>Remove from startup</button>
+        <button id='bStop'>Stop server</button>
+    </div>
+    <div>
+        Output url <br>
+        <input id='iOutput' type='text' size='80' readonly border='0'><br>
+        <button id='bCopy'>Copy URL to clipboard</button>
+    </div>
+
+    <div>
+        <button id='bHistory'>History</button>
+    </div>
+    <div id='dHistory'>
+    </div>
+</body>
+</html>
