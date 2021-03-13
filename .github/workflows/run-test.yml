@@ -1,0 +1,29 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI Test PowerShell on Ubuntu
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  pester-test:
+    name: Pester test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v2
+    - name: Perform a Pester test from the command-line
+      shell: pwsh
+      run: Test-Path resultsfile.log | Should -Be $true
+    - name: Perform a Pester test from Tests.ps1 files
+      shell: pwsh
+      run: |
+        Invoke-Pester -Passthru
