@@ -23,4 +23,4 @@ jobs:
     - name: Perform a Pester test from Tests.ps1 files
       shell: pwsh
       run: |
-        Invoke-Pester -Passthru -ExcludeTagFilter PS51
+        Invoke-Pester -Passthru -ExcludeTagFilter PS51,Win
