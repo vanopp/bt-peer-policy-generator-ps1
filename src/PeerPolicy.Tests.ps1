@@ -21,35 +21,35 @@ describe "Unit tests" {
             $var.end | should -be 2
         }
         it "Should Reverse Bytes" -TestCases @(
-            @{ value = 0x00000000L; expected = 0x00000000L},
-            @{ value = 0x00FF00FFL; expected = 0xFF00FF00L},
-            @{ value = 0x04030201L; expected = 0x01020304L}
+            @{ value = 0x00000000L; expected = 0x00000000L },
+            @{ value = 0x00FF00FFL; expected = 0xFF00FF00L },
+            @{ value = 0x04030201L; expected = 0x01020304L }
         ) {
             Convert-ReverseBytes($value) | should -be $expected
             Convert-ReverseBytes($value) | should -BeOfType UInt32
         }
         it "Should convert UInt To IPAddress" -TestCases @(
-            @{ value = 0xFFFFFFFFL; expected = "255.255.255.255"}
-            @{ value = 0x0A000001L; expected = "10.0.0.1"}
+            @{ value = 0xFFFFFFFFL; expected = "255.255.255.255" }
+            @{ value = 0x0A000001L; expected = "10.0.0.1" }
         ) {
             Convert-UIntToIPAddress($value) | should -be $expected
         }
         it "Should convert Cidr to Netmask" -TestCases @(
-            @{ value = 08; expected = 0xFF000000L},
-            @{ value = 24; expected = 0xFFFFFF00L},
-            @{ value = 31; expected = 0xFFFFFFFEL}
-        ){
+            @{ value = 08; expected = 0xFF000000L },
+            @{ value = 24; expected = 0xFFFFFF00L },
+            @{ value = 31; expected = 0xFFFFFFFEL }
+        ) {
             Convert-CidrToNetmask($value) | should -be $expected
             Convert-CidrToNetmask($value) | should -BeOfType UInt32
         }
         it "Should convert UInt To IPAddress" -TestCases (
-            @{ inputValue = "192.168.0.0/24"; expectedStart = "192.168.0.0"; expectedEnd = "192.168.0.255"},
-            @{ inputValue = "192.168.1.0/25"; expectedStart = "192.168.1.0"; expectedEnd = "192.168.1.127"},
-            @{ inputValue = "192.168.2.10/30"; expectedStart = "192.168.2.8"; expectedEnd = "192.168.2.11"},
-            @{ inputValue = "10.0.0.0/8"; expectedStart = "10.0.0.0"; expectedEnd = "10.255.255.255"},
-            @{ inputValue = "10.0.0.0/08"; expectedStart = "10.0.0.0"; expectedEnd = "10.255.255.255"},
-            @{ inputValue = "200.0.0.0/1"; expectedStart = "128.0.0.0"; expectedEnd = "255.255.255.255"}
-            
+            @{ inputValue = "192.168.0.0/24"; expectedStart = "192.168.0.0"; expectedEnd = "192.168.0.255" },
+            @{ inputValue = "192.168.1.0/25"; expectedStart = "192.168.1.0"; expectedEnd = "192.168.1.127" },
+            @{ inputValue = "192.168.2.10/30"; expectedStart = "192.168.2.8"; expectedEnd = "192.168.2.11" },
+            @{ inputValue = "10.0.0.0/8"; expectedStart = "10.0.0.0"; expectedEnd = "10.255.255.255" },
+            @{ inputValue = "10.0.0.0/08"; expectedStart = "10.0.0.0"; expectedEnd = "10.255.255.255" },
+            @{ inputValue = "200.0.0.0/1"; expectedStart = "128.0.0.0"; expectedEnd = "255.255.255.255" }
+
         ) {
             $actualRange = ($inputValue | Convert-IpCidr-To-IpRange)
             Convert-UIntToIPAddress($actualRange.start) | should -be $expectedStart
@@ -84,28 +84,34 @@ describe "Unit tests" {
         . ("$PSScriptRoot\PeerPolicy.ps1")
 
         it "Should Merge IpRanges" -TestCases (
-            @{ inputValue = @(); `
-            expectedRanges = @() },
-            @{ inputValue = , (New-IpRange 1 2); `
-           expectedRanges = , (New-IpRange 1 2) },
-            @{ inputValue = (New-IpRange 1 2), (New-IpRange 2 3); `
-            expectedRanges = , (New-IpRange 1 3) },
-            @{ inputValue = (New-IpRange 1 2), (New-IpRange 3 4); `
-            expectedRanges = , (New-IpRange 1 4) },
-            @{ inputValue = (New-IpRange 1 5), (New-IpRange 2 3); `
-            expectedRanges = , (New-IpRange 1 5) },
-            @{ inputValue = (New-IpRange 1 2), (New-IpRange 4 5); `
-            expectedRanges = (New-IpRange 1 2), (New-IpRange 4 5) }
+            @{ inputValue          = @(); `
+                    expectedRanges = @() 
+            },
+            @{ inputValue          = , (New-IpRange 1 2); `
+                    expectedRanges = , (New-IpRange 1 2) 
+            },
+            @{ inputValue          = (New-IpRange 1 2), (New-IpRange 2 3); `
+                    expectedRanges = , (New-IpRange 1 3) 
+            },
+            @{ inputValue          = (New-IpRange 1 2), (New-IpRange 3 4); `
+                    expectedRanges = , (New-IpRange 1 4) 
+            },
+            @{ inputValue          = (New-IpRange 1 5), (New-IpRange 2 3); `
+                    expectedRanges = , (New-IpRange 1 5) 
+            },
+            @{ inputValue          = (New-IpRange 1 2), (New-IpRange 4 5); `
+                    expectedRanges = (New-IpRange 1 2), (New-IpRange 4 5) 
+            }
         ) {
             $actual = $inputValue | Merge-IpRanges
 
-            $actual | Should -HaveCount $expectedRanges.Count 
+            $actual | Should -HaveCount $expectedRanges.Count
             for ($i = 0; $i -lt $expectedRanges.Count; $i++) {
                 $actual[$i] | should -BeOfType IpRange
                 $actual[$i].start | should -be $expectedRanges[$i].start
                 $actual[$i].end | should -be $expectedRanges[$i].end
             }
-        }    
+        }
     }
 
     context "Check Convert-TextToPolicy" {
@@ -124,20 +130,20 @@ describe "Unit tests" {
 Describe 'Integration Tests' {
     context "Check Get-PolicyXmlString" {
         it "Should work with empty parameter" {
-            @() | Get-PolicyXmlString | should -Match '<btpolicy[\s\S]*<revision>[\s\S]*</btpolicy>' 
+            @() | Get-PolicyXmlString | should -Match '<btpolicy[\s\S]*<revision>[\s\S]*</btpolicy>'
             @() | Get-PolicyXmlString | should -BeOfType String
         }
-        it -Tag PS51 "Should throw error for non-existent server" {
-            { Get-PolicyXmlString "file://\\nonserver1\file.txt" } | should -Throw "*The network path was not found*"
+        it "Should throw error for non-existent server" {
+            { Get-PolicyXmlString "file://\\nonserver1\file.txt" } | should -Throw "*nonserver1*"
         }
-        it -Tag PS51 "Should throw error for non-existent file" {
+        it "Should throw error for non-existent file" {
             $filename = Join-Path $PSScriptRoot 'nonexistentfile.txt'
-            { Get-PolicyXmlString "file://$filename" } | should -Throw "*Could not find file *nonexistentfile.txt'*"
+            { Get-PolicyXmlString "file://$filename" } | should -Throw "*nonexistentfile.txt*"
         }
-        it -Tag PS51 "Should throw error for wrong url" {
-            { Get-PolicyXmlString "http://zzz.comd" } | should -Throw "*The remote name could not be resolved: 'zzz.comd'*"
+        it "Should throw error for wrong url" {
+            { Get-PolicyXmlString "http://zzz.comd" } | should -Throw "*zzz.comd*"
         }
-        it -Tag PS51 "Should process input file" {
+        it "Should process input file" {
             $filename = Join-Path $TestDrive 'somefile.txt'
             "10.0.0.1/32`r 20.5.0.1/31 `n 100.15.10.1/08 " | Out-File -FilePath $filename -Encoding utf8
 
@@ -146,7 +152,7 @@ Describe 'Integration Tests' {
             $actual | should -Match '<iprange start="20.5.0.0" end="20.5.0.1" weight="10" '
             $actual | should -Match '<iprange start="100.0.0.0" end="100.255.255.255" weight="10" '
         }
-        it -Tag PS51 "Should process multiple input files" {
+        it "Should process multiple input files" {
             $filename1 = Join-Path $TestDrive 'somefile1.txt'
             "10.0.0.1/32`r20.5.0.1/31" | Out-File -FilePath $filename1 -Encoding utf8
             $filename2 = Join-Path $TestDrive 'somefile2.txt'

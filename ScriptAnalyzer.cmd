@@ -1,0 +1,1 @@
+pwsh -command Invoke-ScriptAnalyzer -path C:\Users\Ivan\source\repos\Github\bt-peer-policy-generator-ps1\src 

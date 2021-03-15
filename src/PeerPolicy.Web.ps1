@@ -29,12 +29,12 @@ try {
     . ("$PSScriptRoot\PeerPolicy.ps1") -Uri $Uri
 }
 catch {
-    throw "Error while loading supporting PowerShell Scripts: $PSItem" 
+    throw "Error while loading supporting PowerShell Scripts: $PSItem"
 }
 
 Function Get-PowershellPath {
     $PowershellExePath = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
-    if ($PowershellExePath.Contains("_ISE")) { 
+    if ($PowershellExePath.Contains("_ISE")) {
         $PowershellExePath = (Get-Command powershell.exe).Definition
     }
     $PowershellExePath
@@ -71,20 +71,21 @@ Function Get-HtmlHomeTemplate() {
 
 Function Format-UriArgument([String[]] $uri) {
     if (($null -ne $uri) -and ($uri.Length -gt 0)) {
-        [String[]] $enquoted = ($uri | % { $_ -replace "'","''" -replace '"','\"' })
+        [String[]] $enquoted = ($uri | ForEach-Object { $_ -replace "'", "''" -replace '"', '\"' })
         " -Uri @('" + ($enquoted -join "','") + "')"
     }
     else {
         ""
     }
 }
-Function RegisterAndStartTask { 
+Function RegisterAndStartTask {
     [CmdletBinding()]
+    [OutputType([String])]
     Param (
         [WebSettings] $Settings,
         [String] $lnkFileNameAppendix = ""
     )
-    
+
     $ScriptPath = $PSCommandPath
     $Argument = ""
     if ($Settings.IsShowWindow -eq $false) {
@@ -112,6 +113,7 @@ Function RegisterAndStartTask {
 }
 
 Function StopAndUnregisterTask {
+    [OutputType([String])]
     [CmdletBinding()]
     Param (
         [String] $lnkFileNameAppendix = ""
@@ -122,9 +124,9 @@ Function StopAndUnregisterTask {
 }
 
 Function New-CacheObject ([String] $content = "", [DateTime] $lastModified = [DateTime]::MinValue, [String[]] $uri = @()) {
-    [PSCustomObject]@{ 
+    [PSCustomObject]@{
         Content      = $content;
-        LastModified = $lastModified; 
+        LastModified = $lastModified;
         Uri          = $uri
     }
 }
@@ -155,16 +157,16 @@ Function New-WebSettings ([String[]]$uri, $isShowWindow = $true, $isOpenBrowser 
 $State = [PSCustomObject]@{
     Cache    = $null
     Settings = New-WebSettings $Uri $ShowWindow $OpenBrowser 10 $CacheExpiresHours;
-    History  = New-Object System.Collections.ArrayList    
+    History  = New-Object System.Collections.ArrayList
 }
 
 Function Add-HistoryItem ([System.Net.HttpListenerContext] $context, [TimeSpan] $elapsed) {
-    $Script:State.History.Insert(0, [PSCustomObject]@{ 
-            Date = [DateTime]::Now; Method = $context.Request.HttpMethod; 
-            RawUrl = GetFirstChars $context.Request.RawUrl 50; 
-            UserAgent = (GetFirstChars $context.Request.UserAgent); 
-            Status = $context.Response.StatusCode; 
-            Elapsed = $stopwatch.Elapsed 
+    $Script:State.History.Insert(0, [PSCustomObject]@{
+            Date = [DateTime]::Now; Method = $context.Request.HttpMethod;
+            RawUrl = GetFirstChars $context.Request.RawUrl 50;
+            UserAgent = (GetFirstChars $context.Request.UserAgent);
+            Status = $context.Response.StatusCode;
+            Elapsed = $stopwatch.Elapsed
         })
 
     if ($Script:State.History.Count -gt $Script:State.Settings.HistoryDepth) {
@@ -188,7 +190,7 @@ Function Get-HeaderIfModified([System.Net.HttpListenerContext] $context) {
     [String] $ifModifiedSinceString = $context.Request.Headers["If-Modified-Since"]
     $ifModifiedSince = [DateTime]::MinValue
     if ($ifModifiedSinceString.Length -gt 0) {
-        if (-not [DateTime]::TryParseExact(($ifModifiedSinceString -Replace "%3a", ":"), "r", $null, 
+        if (-not [DateTime]::TryParseExact(($ifModifiedSinceString -Replace "%3a", ":"), "r", $null,
                 [System.Globalization.DateTimeStyles]::None, [ref]$ifModifiedSince)) {
             Write-Error "Unable to parse $ifModifiedSinceString as date"
         }
@@ -277,40 +279,40 @@ Function GetRoute([System.Net.HttpListenerContext] $context) {
 }
 
 Function RegisterRoutes {
-    $GetXml = { 
+    $GetXml = {
         Param ([System.Net.HttpListenerContext] $context)
         WriteResponse $context (Get-Xml $context)
     }
     RegisterRoute 'GET' '/xml' $GetXml
     RegisterRoute 'HEAD' '/xml' $GetXml
-    RegisterRoute 'GET' '/Settings' { 
+    RegisterRoute 'GET' '/Settings' {
         Param ([System.Net.HttpListenerContext] $context)
         $context.Response.ContentType = "application/json"
         WriteResponse $context ($Script:State.Settings | ConvertTo-Json)
     }
-    RegisterRoute 'GET' '/' { 
+    RegisterRoute 'GET' '/' {
         Param ([System.Net.HttpListenerContext] $context)
         $context.Response.ContentType = "text/html"
         WriteResponse $context (Get-HtmlHomeTemplate)
     }
-    RegisterRoute 'GET' '/Stop' { 
+    RegisterRoute 'GET' '/Stop' {
         Param ([System.Net.HttpListenerContext] $context)
         WriteResponse $context 'Exited, now you can close this page'
         $http.Stop()
     }
-    RegisterRoute 'GET' '/Register' { 
+    RegisterRoute 'GET' '/Register' {
         Param ([System.Net.HttpListenerContext] $context)
-        WriteResponse $context (Get-Register $context) 
+        WriteResponse $context (Get-Register $context)
 
         $http.Stop()
         $Script:Restart = $true
     }
-    RegisterRoute 'GET' '/Unregister' { 
+    RegisterRoute 'GET' '/Unregister' {
         Param ([System.Net.HttpListenerContext] $context)
 
         WriteResponse $context (StopAndUnregisterTask)
     }
-    RegisterRoute 'GET' '/History' { 
+    RegisterRoute 'GET' '/History' {
         Param ([System.Net.HttpListenerContext] $context)
         WriteResponse $context ($Script:State.History | ConvertTo-Html)
     }
@@ -337,10 +339,10 @@ Function ProcessHttpRequest {
         catch {
             $context.Response.ContentType = "text/plain";
             $context.Response.StatusCode = 400
-            
+
             [Exception]$ex = $PSItem.Exception
             while ($null -ne $ex.InnerException -and $ex -is [System.Management.Automation.MethodInvocationException]) {
-                $ex = $ex.InnerException 
+                $ex = $ex.InnerException
             }
 
             Write-Error "$ex"
@@ -371,12 +373,12 @@ Function StartWebServer() {
             $url = $HttpPrefix.Replace("*", "localhost") + "Stop"
             $res = Invoke-WebRequest -URI $url -TimeoutSec 1
             if ($res.StatusCode -ne 200) { throw "Unable to stop service on $HttpPrefix`: $res" }
-    
+
             #previous http instance were disposed
             $http = New-Object System.Net.HttpListener
             $http.Prefixes.Add($HttpPrefix)
             try {
-                $http.Start()    
+                $http.Start()
             }
             catch {
                 throw "Second try http Start has failed: $PSItem"
@@ -389,13 +391,13 @@ Function StartWebServer() {
     RegisterRoutes
 
     if ($http.IsListening) {
-        Write-Host "Web server is listening $($http.Prefixes)"
+        Write-Host "Web server is listening $($http.Prefixes) powershell version $($PSVersionTable.PSVersion.Major)"
     }
-    
+
     if ($OpenBrowser) {
         Start-Process $HttpPrefix.Replace("*", "localhost")
     }
-    
+
     while ($http.IsListening) {
         ProcessHttpRequest -http $http
     }

@@ -2,15 +2,15 @@ describe "Unit tests" {
     BeforeAll {
         . ("$PSScriptRoot\PeerPolicy.Web.ps1")
     }
-    context "Check util"  {
+    context "Check util" {
         it "Should format argument" -TestCases @(
-            @{ value = @(); expected = ""},
-            @{ value = @("123"); expected = " -Uri @('123')"},
-            @{ value = @("234", "abc"); expected = " -Uri @('234','abc')"},
-            @{ value = @("aa'bb"); expected = " -Uri @('aa''bb')"},
-            @{ value = @('aa"bb'); expected = " -Uri @('aa\""bb')"},
-            @{ value = $null; expected = ""}
-        ){
+            @{ value = @(); expected = "" },
+            @{ value = @("123"); expected = " -Uri @('123')" },
+            @{ value = @("234", "abc"); expected = " -Uri @('234','abc')" },
+            @{ value = @("aa'bb"); expected = " -Uri @('aa''bb')" },
+            @{ value = @('aa"bb'); expected = " -Uri @('aa\""bb')" },
+            @{ value = $null; expected = "" }
+        ) {
             Format-UriArgument $value | should -be $expected
         }
     }
@@ -67,11 +67,11 @@ describe ("Integration Tests") {
         $port = Get-Random -Minimum 50000 -Maximum 60000
         $httpPrefix = "http://localhost:$port/"
         $ScriptPath = "$PSScriptRoot\PeerPolicy.Web.ps1"
-        $job = (Start-Job {
-            $inputObj = ($input | ConvertTo-Json | ConvertFrom-Json)
-            
-            & "$($inputObj.ScriptPath)" -WebServer $true -Uri @() -OpenBrowser $false -HttpPrefix $inputObj.HttpPrefix
-        } -InputObject @{ HttpPrefix = $httpPrefix; ScriptPath = $ScriptPath } )
+        $job = (
+            Start-Job {
+                $inputObj = ($input | ConvertTo-Json | ConvertFrom-Json)
+                & "$($inputObj.ScriptPath)" -WebServer $true -Uri @() -OpenBrowser $false -HttpPrefix $inputObj.HttpPrefix
+            } -InputObject @{ HttpPrefix = $httpPrefix; ScriptPath = $ScriptPath } )
     }
     context -Tag Win ("Check Web Server") {
         it "Should start-stop" {
@@ -86,7 +86,7 @@ describe ("Integration Tests") {
             $nodes = $xml.SelectNodes('//iprange')
             $nodes.Count | should -Be 3
         }
-        it -Tag PS51 "Should get /xml?Uri (Custom input file)" {
+        it "Should get /xml?Uri (Custom input file)" {
             $filename = Join-Path $TestDrive 'somefile.txt'
             "10.0.0.1/32`r 20.5.0.1/31 `n 100.15.10.1/08 " | Out-File -FilePath $filename -Encoding utf8
 
@@ -106,7 +106,7 @@ describe ("Integration Tests") {
             Write-Information "/History: $html"
         }
     }
-    AfterEach { 
+    AfterEach {
         Invoke-WebRequest "$($httpPrefix)Stop" -TimeoutSec 5
         if ($job -ne $null) {
             if ($job.Finished -eq $false) {
@@ -114,17 +114,18 @@ describe ("Integration Tests") {
                 Stop-job -job $job
             }
 
-            #(Receive-Job -Job $job) 
+            (Receive-Job -Job $job)
             #6>$null - TODO can't suppress Write-Host from job
-        } else {
+        }
+        else {
             Write-Warning "`$job is null"
         }
     }
     AfterAll {
         # just to make sure
-        Get-Job | Where-Object {$_.Finished -eq $false} | % { 
+        Get-Job | Where-Object { $_.Finished -eq $false } | ForEach-Object {
             Write-Warning "Job was not stopped before. Stopping job.. $_"
-            Stop-job -job $_ 
+            Stop-job -job $_
         }
     }
 }
